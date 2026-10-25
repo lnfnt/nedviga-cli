@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nedviga-cli"
+version = "0.1.0"
+description = "CLI and SDK for Moscow secondary real estate monitoring"
+readme = "README.md"
+authors = [{ name = "lnfnt", email = "lnfnt@proton.me" }]
+keywords = ["real-estate", "pricing", "offline-analysis", "cli"]
+requires-python = ">=3.11"
+license = "AGPL-3.0-only"
+dependencies = [
+    "pydantic>=2",
+    "pyyaml",
+    "requests>=2.28",
+    "camoufox[geoip]>=0.4",
+    "Pillow>=10.0",
+    "beautifulsoup4[lxml]>=4.12",
+]
+
+[project.optional-dependencies]
+cli = ["click>=8"]
+dev = ["pytest>=7"]
+pdf = ["weasyprint>=60"]
+
+[project.scripts]
+nedviga-cli = "nedviga.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["nedviga*"]
+
+[tool.setuptools.package-data]
+nedviga = ["data/*.json", "data/*.asc", "py.typed", "metro_directory.json", "graph_moscow.pkg"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra -q"

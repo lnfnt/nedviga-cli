@@ -1,0 +1,10 @@
+{
+  "version": 0.6,
+  "elements": [
+    {"type": "node", "id": 1, "lat": 55.6001, "lon": 37.6001, "tags": {"amenity": "school", "name": "School A"}},
+    {"type": "node", "id": 2, "lat": 55.6002, "lon": 37.6002, "tags": {"amenity": "kindergarten", "name": "KG B"}},
+    {"type": "node", "id": 3, "lat": 55.6003, "lon": 37.6003, "tags": {"shop": "supermarket", "name": "Shop C"}},
+    {"type": "node", "id": 4, "lat": 55.6004, "lon": 37.6004, "tags": {"leisure": "park", "name": "Park D"}},
+    {"type": "node", "id": 5, "lat": 55.6005, "lon": 37.6005, "tags": {"amenity": "clinic", "name": "Clinic E"}}
+  ]
+}
