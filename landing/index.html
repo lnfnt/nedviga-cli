@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nedviga-cli — недвижимость и аналитика Москвы для агентов</title>
+<meta name="description" content="CLI и Python SDK для подбора и анализа жилой недвижимости Москвы: поиск, сравнение, торг, досье домов, мониторинг изменений. MCP-сервер, JSON-конверты, аудит. AGPL-3.0.">
+<style>
+:root{
+  --bg:#0b0e13; --panel:#11161e; --panel2:#0e1219; --border:#212a37;
+  --text:#d6dee9; --dim:#8a97a8; --mono:#8fd694; --accent:#46b96b;
+  --ok:#3fb96b; --warn:#d9a53a; --bad:#d96060;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font:15px/1.65 -apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background-image:linear-gradient(rgba(143,214,148,.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(143,214,148,.025) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+.wrap{max-width:960px;margin:0 auto;padding:0 24px}
+a{color:var(--mono);text-decoration:none}
+a:hover{text-decoration:underline}
+.mono,code,pre{font-family:"SF Mono",Consolas,Menlo,"Liberation Mono",monospace}
+code{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:13px;color:var(--mono)}
+header{padding:64px 0 40px;border-bottom:1px solid var(--border)}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 20px}
+.badge{display:inline-block;padding:3px 10px;border:1px solid var(--border);border-radius:999px;
+  font-family:"SF Mono",Consolas,monospace;font-size:12px;color:var(--dim);background:var(--panel)}
+.badge.acc{color:var(--accent);border-color:#1f4630}
+.badge.ok{color:var(--ok);border-color:#1f4630}
+h1{font-size:34px;letter-spacing:-.5px;margin-bottom:8px}
+h1 .tag{color:var(--mono);font-size:15px;font-family:"SF Mono",Consolas,monospace;font-weight:400;margin-left:10px}
+.lede{color:var(--dim);max-width:720px;font-size:16px}
+section{padding:44px 0;border-bottom:1px solid var(--border)}
+section:last-child{border-bottom:none}
+h2{font-size:20px;margin-bottom:6px;letter-spacing:-.2px}
+h2::before{content:"§ ";color:var(--accent)}
+.sub{color:var(--dim);margin-bottom:20px;max-width:720px}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:12px 0}
+th,td{text-align:left;padding:9px 12px;border:1px solid var(--border);vertical-align:top}
+th{background:var(--panel);color:var(--dim);font-weight:600;font-family:"SF Mono",Consolas,monospace;font-size:12px;text-transform:uppercase;letter-spacing:.6px}
+tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+pre{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:18px;
+  overflow-x:auto;font-size:13px;line-height:1.7;margin:14px 0;color:#c8d3e0}
+pre .c{color:#5c6b7c}
+pre .k{color:var(--mono)}
+pre .s{color:#7ec8ff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;margin:16px 0}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 18px}
+.card h3{font-size:14px;margin-bottom:6px;color:var(--text)}
+.card h3::before{content:"▸ ";color:var(--accent)}
+.card p{font-size:13px;color:var(--dim)}
+footer{padding:36px 0 56px;color:var(--dim);font-size:13px}
+.env td:first-child{white-space:nowrap;color:var(--mono)}
+@media (max-width:640px){h1{font-size:26px}}
+</style>
+</head>
+<body>
+<header>
+<div class="wrap">
+  <h1>nedviga-cli<span class="tag">// недвижимость и аналитика Москвы</span></h1>
+  <div class="badges">
+    <span class="badge acc">PyPI: nedviga-cli</span>
+    <span class="badge">v0.1.2</span>
+    <span class="badge ok">AGPL-3.0</span>
+    <span class="badge">Python 3.11+</span>
+    <span class="badge">MCP-ready</span>
+    <span class="badge">GPG-signed artifacts</span>
+  </div>
+  <p class="lede">CLI и Python SDK для подбора и анализа жилой недвижимости Москвы. Рабочий цикл:
+  поиск, карточка решения, сравнение, торг, проверка новостроек и застройщиков, инфраструктура,
+  мониторинг изменений, отчёт. Для ИИ-агентов — MCP-сервер, роли, JSON-конверты и per-record аудит.
+  Прогнозов цен нет: медианы и watch-дельты — факты с датой.</p>
+</div>
+</header>
+
+<section><div class="wrap">
+  <h2>Быстрый цикл</h2>
+  <pre><span class="c"># подготовка: wizard проверит окружение</span>
+<span class="k">pip install</span> nedviga-cli
+<span class="k">nedviga-cli wizard</span> doctor
+
+<span class="c"># профиль семьи, поиск, сравнение, карточка, мониторинг</span>
+<span class="k">nedviga-cli wizard init</span> --profile family --out ./kit
+<span class="k">nedviga-cli search</span> --source cian --rooms 2 --price-max 20000000 \
+  --geo-districts <span class="s">"ЮАО,ЮЗАО"</span> --out cards.json
+<span class="k">nedviga-cli compare</span> --file cards.json --format telegram
+<span class="k">nedviga-cli card</span> cards.json --format all --out ./out
+<span class="k">nedviga-cli watch add</span> --file cards.json
+<span class="k">nedviga-cli watch check</span> --offline fresh.json
+
+<span class="c"># досье дома, шум, источники</span>
+<span class="k">nedviga-cli dossier match</span> --address <span class="s">"улица Эталонная, дом 4"</span>
+<span class="k">nedviga-cli noise sync</span> &amp;&amp; <span class="k">nedviga-cli noise</span> --lat 55.72 --lon 37.61
+<span class="k">nedviga-cli source</span></pre>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Источники</h2>
+  <table>
+    <tr><th>Класс</th><th>Что даёт</th></tr>
+    <tr><td>ЦИАН, Авито, Домклик</td><td>Живые объявления. Браузерные адаптеры работают только через ваш egress <code>NEDVIGA_EGRESS_PROXY</code>; без него источник честно отключается (<code>source_disabled</code>).</td></tr>
+    <tr><td>Открытые данные Москвы</td><td>Досье домов, ЖКХ, реестр новостроек, застройщики по ИНН (банки, суды), шум-мониторинг.</td></tr>
+    <tr><td>ЕГРН</td><td>Не используется. Модуль приёма и проверки выписки — от собственника.</td></tr>
+  </table>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Аналитика решения</h2>
+  <div class="grid">
+    <div class="card"><h3>Семейная карта объекта</h3><p>Сводный профиль объекта под заданный семейный сценарий: составные части оценки разложены по измеримым критериям.</p></div>
+    <div class="card"><h3>Сравнительная матрица</h3><p>Единый формат сравнения по shortlist; выгрузки в text, telegram и другое.</p></div>
+    <div class="card"><h3>Медианы торга</h3><p>По комплексу. При малой выборке — честный <code>insufficient_sample</code>, не выдуманная цифра.</p></div>
+    <div class="card"><h3>Антиприманочные флаги</h3><p>Разметка объявлений с признаками приманки: заниженная цена, стоковые фото, несоответствие метража.</p></div>
+    <div class="card"><h3>Risk-скоринг</h3><p>Взвешенная оценка рисков объекта; юридические триаж-маркеры — 11 флагов для первичного просмотра юристом.</p></div>
+    <div class="card"><h3>Цепочки альтернатив</h3><p>Если объект снят — подмены из той же локации по скорингу соответствия профилю.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Цикл сделки</h2>
+  <p class="sub">Пайплайн статусов <code>shortlist → offer → …</code>, watch цен, снятия и перевыставления,
+  дайджесты, автоподбор по профилю. Артефакты — PDF/HTML-каталог, PPTX-презентации
+  (<code>deck</code>), план показов, прозвон-листы, чек-листы передачи юристу.</p>
+  <pre><span class="c"># Python SDK</span>
+<span class="k">from</span> nedviga.sources_avito <span class="k">import</span> parse_livetext
+<span class="k">from</span> nedviga.deck <span class="k">import</span> deck_from_cards
+cards = parse_livetext(open(<span class="s">"avito_text.txt"</span>).read())
+deck_from_cards(cards, <span class="s">"подборка.pptx"</span>, title=<span class="s">"ЮАО, двушки"</span>)</pre>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Контракт вывода</h2>
+  <p class="sub">Один JSON-конверт в stdout: <code>ok/status/reason/source/data/metadata</code>. Логи — в stderr.
+  Поведение при деградации источника определено кодами выхода.</p>
+  <table>
+    <tr><th>Код</th><th>Значение</th></tr>
+    <tr><td><code>0</code></td><td>Данные получены, контракт валиден.</td></tr>
+    <tr><td><code>1</code></td><td>Критично для окружения: нет браузерного рантайма/кэша.</td></tr>
+    <tr><td><code>2</code></td><td>Деградация источника: WAF, капча, rate-limit.</td></tr>
+    <tr><td><code>3</code></td><td>Ошибка источника/парсера: изменение DOM, <code>source_disabled</code>, <code>source_blocked</code>.</td></tr>
+    <tr><td><code>4</code></td><td>Невалидные аргументы CLI.</td></tr>
+  </table>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Безопасность</h2>
+  <div class="grid">
+    <div class="card"><h3>Fail-closed страж</h3><p>Сетевой страж на egress-пути: сбой конфигурации отключает живые источники, а не работает «как получится».</p></div>
+    <div class="card"><h3>Spotlighting</h3><p>Внешний текст помечается <code>&lt;external_untrusted_data&gt;</code> — модель не путает чужие данные со своими инструкциями.</p></div>
+    <div class="card"><h3>Роли и аудит</h3><p>Per-record аудит действий; разграничение по ролям встроено в контур.</p></div>
+    <div class="card"><h3>ПДн-минимизация</h3><p>Контакты извлекаются только по явному флагу с указанной целью. Идемпотентный purge состояния.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Установка и конфигурация</h2>
+  <pre><span class="c"># из PyPI</span>
+pip install nedviga-cli
+
+<span class="c"># из репозитория</span>
+pip install git+https://github.com/lnfnt/nedviga-cli.git
+
+<span class="c"># один раз: браузерный рантайм для live-адаптеров</span>
+XDG_CACHE_HOME=<span class="s">"$HOME/.cache/nedviga-py"</span> python3 -m camoufox fetch</pre>
+  <table class="env">
+    <tr><th>Переменная</th><th>Назначение</th></tr>
+    <tr><td><code>NEDVIGA_EGRESS_PROXY</code></td><td>HTTP-выход для браузерных адаптеров; без него живые источники = <code>source_disabled</code>.</td></tr>
+    <tr><td><code>NEDVIGA_MOS_TOKEN_FILE</code></td><td>Файл ключа api.mos.ru (путь, не значение в env).</td></tr>
+    <tr><td><code>NEDVIGA_STATE_DIR</code></td><td>Каталог состояния.</td></tr>
+    <tr><td><code>NEDVIGA_FEED_URL</code></td><td>Опциональный сервер манифестов свежести адаптеров.</td></tr>
+  </table>
+  <p class="sub">Ограничения: данные московские (для других городов адаптеров нет);
+  прогноз транспорта — web-оценка и помечается как негарантийная.</p>
+</div></section>
+
+<footer><div class="wrap">
+  <p>AGPL-3.0-only — сетевой сервис на этом коде обязан предоставить исходники (§13, <code>nedviga-cli source</code>).
+  Проверка релиза: <code>sha256sum -c SHA256SUMS</code>, <code>gpg --verify *.asc</code> (ключ в релизе).
+  · Автор и правообладатель: <a href="mailto:lnfnt@proton.me">lnfnt</a> · <a href="https://github.com/lnfnt/nedviga-cli">github.com/lnfnt/nedviga-cli</a></p>
+</div></footer>
+</body>
+</html>
